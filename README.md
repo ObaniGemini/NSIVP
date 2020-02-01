@@ -1,2 +1,3 @@
-# FUCKSVIP
-For all you peeps not willing to use scilab for svip
+# NSIVP
+
+A yet unworking replacement library for SIVP on scilab, using SDL
