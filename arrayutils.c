@@ -1,5 +1,4 @@
-#include "utility.h"
-#include <stdio.h>
+#include "arrayutils.h"
 
 
 uint8_t maxArrayU8( uint8_t * array, size_t size ) {
@@ -95,20 +94,20 @@ double minArrayDouble( double * array, size_t size ) {
 
 
 void printArrayU8( uint8_t * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%d%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%hhu%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 void printArrayU16( uint16_t * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%d%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%hu%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 void printArrayU32( uint32_t * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%d%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%u%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 void printArrayU64( uint64_t * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%d%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%lu%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 
 
 void printArrayChar( char * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%c%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%c%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 void printArrayInt( int * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%d%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%d%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 void printArrayFloat( float * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%F%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%F%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }
 void printArrayDouble( double * array, size_t size ) {
-	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%F%s", i != size-1 ? ", " : " "); printf("]\n"); }
+	printf("[ "); for( size_t i = 0; i < size; ++i ) printf("%F%s", array[i], i != size-1 ? ", " : " "); printf("]\n"); }

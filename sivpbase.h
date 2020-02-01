@@ -15,7 +15,7 @@ typedef struct {
 SDL_Surface * storeImage( const char * path );
 Histogram storeHistogram( SDL_Surface * image );
 
-void displayTexture( SDL_Texture * tex, const char * windowName ); //private
+void displayTexture( SDL_Texture * tex, const char * windowName, const int width, const int height ); //private
 void displayImage( SDL_Surface * image );
 void displayHistogram( Histogram * histogram );
 

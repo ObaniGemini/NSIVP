@@ -27,16 +27,17 @@ Histogram storeHistogram( SDL_Surface * image ) {
 
 
 
-void displayTexture( SDL_Texture * tex, const char * windowName ) {
-	SDL_CreateWindowAndRenderer( tex->w, tex->h, 0, &win, &r );
+void displayTexture( SDL_Texture * tex, const char * windowName, const int width, const int height ) {
+	SDL_CreateWindowAndRenderer( width, height, 0, &win, &r );
 	SDL_SetWindowTitle( win, windowName );
+
+	SDL_RenderCopy( r, tex, NULL, NULL);
 
 	while( 1 ) {
 		SDL_PollEvent( &ev );
 		if( ev.type == SDL_QUIT )
 			break;
 
-		SDL_RenderCopy( r, tex, NULL, NULL);
 		SDL_RenderPresent( r );
 	}
 
@@ -47,33 +48,33 @@ void displayTexture( SDL_Texture * tex, const char * windowName ) {
 
 void displayImage( SDL_Surface * image ) {
 	SDL_Texture * tex = SDL_CreateTextureFromSurface( r, image );
-	displayTexture( tex, "NSVIP Picture Display" );
+	displayTexture( tex, "NSVIP Picture Display", image->w, image->h );
 	SDL_DestroyTexture( tex );
 }
 
 
 void displayHistogram( Histogram * histogram ) {
-	SDL_Texture * tex = SDL_CreateTexture( r, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 640, 480 );
+	const int w = 640;
+	const int h = 480;
+	const uint64_t maxValue = maxArrayU64( histogram->data, 256 ); //640 * 480 * 3
+	const double factorValue = 256.0 / w;
+	const double factorCount = h / maxValue;
 
-	const size_t maxValue = maxArrayU8( tex->pixels, 921600 ); //640 * 480 * 3
-	const double factorValue = 256.0 / 640.0;
-	const double factorCount = 480.0 / maxValue;
-	const size_t w = tex->w;
-	const size_t h = tex->h;
+	SDL_Texture * tex = SDL_CreateTexture( r, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, w, h );
 
 	uint8_t texContent[ w * h * 3 ];
 	bzero( texContent, sizeof( uint8_t ) * w * h * 3 ); //black out
 
 
-	for( int i = 0; i < 640; ++i ) {
-		size_t pos = i * 3 + ( h - ( histogram->data[ (int)(i * factorValue) ] * factorCount ) ) * w * 3;
+	for( int i = 0; i < w; ++i ) {
+		size_t pos = i * 3 + ( h - ( histogram->data[ (size_t)(i * factorValue) ] * factorCount ) ) * ( w - 1 ) * 3;
 		texContent[ pos ] = 255;
 		texContent[ pos + 1 ] = 255;
 		texContent[ pos + 2 ] = 255;
 	}
 
 	SDL_UpdateTexture( tex, NULL, texContent, 1 );
-	displayTexture( tex, "NSVIP Histogram Display" );
+	displayTexture( tex, "NSVIP Histogram Display", w, h );
 	SDL_DestroyTexture( tex );
 }
 

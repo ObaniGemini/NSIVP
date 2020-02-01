@@ -1,13 +1,21 @@
 CC=gcc -std=c99
-FLAGS=`sdl2-config --cflags` -Wall -Wextra
-CFLAGS=`sdl-config --libs` -lSDL_image
+FLAGS=-lSDL2 -lSDL2_image -Wall -Wextra -g
+
+FILES=sivpbase.c arrayutils.c
+FILESOBJ=$(FILES:.c=.o)
+FILESHEAD=$(FILES:.c=.h)
 
 
-output	:	*.o *.h
-		$(CC) $(FLAGS) $(CFLAGS) $< -o $@
 
-*.o:	*.c
+
+output	:	$(FILES) $(FILESHEAD)
+		$(CC) $(FLAGS) $^ -o $@
+
+%.o:	%.c $(FILESHEAD)
 		$(CC) $(FLAGS) -c $<
+
+
+
 
 clean	:
 		rm -rf *.o *.out output
