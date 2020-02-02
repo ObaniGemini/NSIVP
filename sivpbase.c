@@ -6,20 +6,25 @@ SDL_Renderer * r;
 SDL_Event ev;
 
 
-SDL_Surface * storeImage( const char * path ) {
-	SDL_Surface * surface = IMG_Load( path );
-	assert( surface );
-	return surface;
+Image storeImage( const char * path ) {
+	Image image;
+	image.pixels = stbi_load( path, &image.w, &image.h, &image.chans, 0 );
+	switch( image.chans ) {
+		case 1: image.SDLmode = SDL_PIXELFORMAT_INDEX8; break;
+		case 3: image.SDLmode = SDL_PIXELFORMAT_RGB888; break;
+		case 4: image.SDLmode = SDL_PIXELFORMAT_RGBA8888; break;
+		default: printf("Error loading image %s (unknown channels number)\n", path); exit(1); break;
+	} return image;
 }
 
 
-Histogram storeHistogram( SDL_Surface * image ) {
+Histogram storeHistogram( Image * image ) {
 	Histogram histogram;
 	bzero( histogram.data, sizeof( size_t ) * 256 );
 
 	size_t imageSize = image->w * image->h;
 	for( size_t i = 0; i < imageSize; i++ ) {
-		histogram.data[ ( ( uint8_t * )image->pixels )[ i ] ]++;
+		histogram.data[ image->pixels[ i ] ]++;
 	} return histogram;
 }
 
@@ -46,8 +51,9 @@ void displayTexture( SDL_Texture * tex, const char * windowName, const int width
 }
 
 
-void displayImage( SDL_Surface * image ) {
-	SDL_Texture * tex = SDL_CreateTextureFromSurface( r, image );
+void displayImage( Image * image ) {
+	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
+	SDL_UpdateTexture( tex, NULL, image->pixels, 1 );
 	displayTexture( tex, "NSVIP Picture Display", image->w, image->h );
 	SDL_DestroyTexture( tex );
 }
@@ -84,21 +90,20 @@ void displayHistogram( Histogram * histogram ) {
 
 void initNSIVP() {
 	SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS );
-	IMG_Init( IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF );
 }
 
 
 void exitNSIVP() {
-	IMG_Quit();
+	SDL_Quit();
 	exit(0);
 }
 
 
 int main() {
 	initNSIVP();
-	SDL_Surface * image = storeImage( "testimg.jpg" );
-	Histogram hist = storeHistogram( image );
-	displayImage( image );
+	Image image = storeImage( "testimg.jpg" );
+	Histogram hist = storeHistogram( &image );
+	displayImage( &image );
 	displayHistogram( &hist );
 	exitNSIVP();
 }

@@ -1,5 +1,7 @@
-CC=gcc -std=c99
-FLAGS=-lSDL2 -lSDL2_image -Wall -Wextra -g
+CC=gcc
+FLAGS=-lSDL2 -Wall -Wextra -g -lm
+
+HEADERS=stb_image.h
 
 FILES=sivpbase.c arrayutils.c
 FILESOBJ=$(FILES:.c=.o)
@@ -8,10 +10,10 @@ FILESHEAD=$(FILES:.c=.h)
 
 
 
-output	:	$(FILES) $(FILESHEAD)
+output	:	$(FILES) $(FILESHEAD) $(HEADERS)
 		$(CC) $(FLAGS) $^ -o $@
 
-%.o:	%.c $(FILESHEAD)
+%.o:	%.c
 		$(CC) $(FLAGS) -c $<
 
 
