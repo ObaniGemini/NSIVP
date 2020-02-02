@@ -33,10 +33,11 @@ Histogram storeHistogram( Image * image ) {
 
 
 void displayTexture( SDL_Texture * tex, const char * windowName, const int width, const int height ) {
-	SDL_CreateWindowAndRenderer( width, height, 0, &win, &r );
-	SDL_SetWindowTitle( win, windowName );
+	win = SDL_CreateWindow( windowName, 0, 0, width, height, 0 );
+	r = SDL_CreateRenderer( win, -1, SDL_RENDERER_ACCELERATED );
 
-	SDL_RenderCopy( r, tex, NULL, NULL);
+	SDL_Rect rect = { 0, 0, width, height };
+	SDL_RenderCopy( r, tex, NULL, &rect );
 
 	while( 1 ) {
 		SDL_PollEvent( &ev );
@@ -53,7 +54,7 @@ void displayTexture( SDL_Texture * tex, const char * windowName, const int width
 
 void displayImage( Image * image ) {
 	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
-	SDL_UpdateTexture( tex, NULL, image->pixels, 1 );
+	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans );
 	displayTexture( tex, "NSVIP Picture Display", image->w, image->h );
 	SDL_DestroyTexture( tex );
 }
@@ -79,7 +80,7 @@ void displayHistogram( Histogram * histogram ) {
 		texContent[ pos + 2 ] = 255;
 	}
 
-	SDL_UpdateTexture( tex, NULL, texContent, 1 );
+	SDL_UpdateTexture( tex, NULL, texContent, sizeof( uint8_t ) * 3 );
 	displayTexture( tex, "NSVIP Histogram Display", w, h );
 	SDL_DestroyTexture( tex );
 }
