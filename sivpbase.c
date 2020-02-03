@@ -1,20 +1,32 @@
 #include "sivpbase.h"
 
 
-SDL_Window * win;
-SDL_Renderer * r;
-SDL_Event ev;
+int chooseSDLMode( int chans ) {
+	switch( chans ) {
+		case 1: return SDL_PIXELFORMAT_INDEX8;
+		case 3: return SDL_PIXELFORMAT_RGB888;
+		case 4: return SDL_PIXELFORMAT_RGBA8888;
+		default: printf("Error loading image SDL mode\n"); return SDL_PIXELFORMAT_UNKNOWN;
+	}
+}
+
+
+Image allocImage( const int width, const int height, const int chans ) {
+	Image image;
+	image.w = width;
+	image.h = height;
+	image.chans = chans;
+	image.SDLmode = chooseSDLMode( chans );
+	image.pixels = calloc( image.chans * image.w * image.h, sizeof( uint8_t ) );
+	return image;
+}
 
 
 Image storeImage( const char * path ) {
 	Image image;
 	image.pixels = stbi_load( path, &image.w, &image.h, &image.chans, 0 );
-	switch( image.chans ) {
-		case 1: image.SDLmode = SDL_PIXELFORMAT_INDEX8; break;
-		case 3: image.SDLmode = SDL_PIXELFORMAT_RGB888; break;
-		case 4: image.SDLmode = SDL_PIXELFORMAT_RGBA8888; break;
-		default: printf("Error loading image %s (unknown channels number)\n", path); exit(1); break;
-	} return image;
+	chooseSDLMode( image.chans );
+	return image;
 }
 
 
@@ -32,9 +44,13 @@ Histogram storeHistogram( Image * image ) {
 
 
 
-void displayTexture( SDL_Texture * tex, const char * windowName, const int width, const int height ) {
-	win = SDL_CreateWindow( windowName, 0, 0, width, height, 0 );
-	r = SDL_CreateRenderer( win, -1, SDL_RENDERER_ACCELERATED );
+static void _displayImage( Image * image, const char * windowName, const int width, const int height ) {
+	SDL_Window * win = SDL_CreateWindow( windowName, 0, 0, width, height, 0 );
+	SDL_Renderer * r = SDL_CreateRenderer( win, -1, SDL_RENDERER_ACCELERATED );
+	SDL_Event ev;
+
+	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
+	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans );
 
 	SDL_Rect rect = { 0, 0, width, height };
 	SDL_RenderCopy( r, tex, NULL, &rect );
@@ -47,17 +63,16 @@ void displayTexture( SDL_Texture * tex, const char * windowName, const int width
 		SDL_RenderPresent( r );
 	}
 
+	SDL_DestroyTexture( tex );
 	SDL_DestroyRenderer( r );
 	SDL_DestroyWindow( win );
 }
 
 
 void displayImage( Image * image ) {
-	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
-	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans );
-	displayTexture( tex, "NSVIP Picture Display", image->w, image->h );
-	SDL_DestroyTexture( tex );
+	_displayImage( image, "NSVIP Image Display", image->w, image->h );
 }
+
 
 
 void displayHistogram( Histogram * histogram ) {
@@ -67,22 +82,17 @@ void displayHistogram( Histogram * histogram ) {
 	const double factorValue = 256.0 / w;
 	const double factorCount = h / maxValue;
 
-	SDL_Texture * tex = SDL_CreateTexture( r, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, w, h );
-
-	uint8_t texContent[ w * h * 3 ];
-	bzero( texContent, sizeof( uint8_t ) * w * h * 3 ); //black out
+	Image image = allocImage( w, h, 3 );
 
 
 	for( int i = 0; i < w; ++i ) {
 		size_t pos = i * 3 + ( h - ( histogram->data[ (size_t)(i * factorValue) ] * factorCount ) ) * ( w - 1 ) * 3;
-		texContent[ pos ] = 255;
-		texContent[ pos + 1 ] = 255;
-		texContent[ pos + 2 ] = 255;
+		image.pixels[ pos ] = 255;
+		image.pixels[ pos + 1 ] = 255;
+		image.pixels[ pos + 2 ] = 255;
 	}
 
-	SDL_UpdateTexture( tex, NULL, texContent, sizeof( uint8_t ) * 3 );
-	displayTexture( tex, "NSVIP Histogram Display", w, h );
-	SDL_DestroyTexture( tex );
+	_displayImage( &image, "NSVIP Histogram Display", w, h );
 }
 
 
