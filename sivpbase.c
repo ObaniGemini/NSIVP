@@ -1,7 +1,7 @@
 #include "sivpbase.h"
 
 
-int chooseSDLMode( int chans ) {
+static int chooseSDLMode( int chans ) {
 	switch( chans ) {
 		case 1: return SDL_PIXELFORMAT_INDEX8;
 		case 3: return SDL_PIXELFORMAT_RGB888;
@@ -32,10 +32,10 @@ Image storeImage( const char * path ) {
 
 Histogram storeHistogram( Image * image ) {
 	Histogram histogram;
-	bzero( histogram.data, sizeof( size_t ) * 256 );
+	bzero( histogram.data, sizeof( uint64_t ) * 256 );
 
-	size_t imageSize = image->w * image->h;
-	for( size_t i = 0; i < imageSize; i++ ) {
+	uint64_t imageSize = image->w * image->h;
+	for( uint64_t i = 0; i < imageSize; i++ ) {
 		histogram.data[ image->pixels[ i ] ]++;
 	} return histogram;
 }
@@ -52,8 +52,7 @@ static void _displayImage( Image * image, const char * windowName, const int wid
 	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
 	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans );
 
-	SDL_Rect rect = { 0, 0, width, height };
-	SDL_RenderCopy( r, tex, NULL, &rect );
+	SDL_RenderCopy( r, tex, NULL, NULL );
 
 	while( 1 ) {
 		SDL_PollEvent( &ev );
@@ -78,7 +77,7 @@ void displayImage( Image * image ) {
 void displayHistogram( Histogram * histogram ) {
 	const int w = 640;
 	const int h = 480;
-	const uint64_t maxValue = maxArrayU64( histogram->data, 256 ); //640 * 480 * 3
+	const uint64_t maxValue = maxArrayU64( histogram->data, 256 );
 	const double factorValue = 256.0 / w;
 	const double factorCount = h / maxValue;
 
