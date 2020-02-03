@@ -9,12 +9,14 @@ FILESHEAD=$(FILES:.c=.h)
 
 
 
+output:    $(FILESOBJ) $(FILESHEAD) $(HEADERS)
+	$(CC) $(FLAGS) -o $@ $(FILESOBJ)
+	
 
-output	:	$(FILES) $(FILESHEAD) $(HEADERS)
-		$(CC) $(FLAGS) $^ -o $@
 
 %.o:	%.c
-		$(CC) $(FLAGS) -c $<
+	$(CC) -c $< $(FLAGS)
+
 
 
 

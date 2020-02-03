@@ -25,7 +25,7 @@ Image allocImage( const int width, const int height, const int chans ) {
 Image storeImage( const char * path ) {
 	Image image;
 	image.pixels = stbi_load( path, &image.w, &image.h, &image.chans, 0 );
-	chooseSDLMode( image.chans );
+	image.SDLmode = chooseSDLMode( image.chans );
 	return image;
 }
 
@@ -45,12 +45,13 @@ Histogram storeHistogram( Image * image ) {
 
 
 static void _displayImage( Image * image, const char * windowName, const int width, const int height ) {
+	
 	SDL_Window * win = SDL_CreateWindow( windowName, 0, 0, width, height, 0 );
 	SDL_Renderer * r = SDL_CreateRenderer( win, -1, SDL_RENDERER_ACCELERATED );
 	SDL_Event ev;
 
 	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
-	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans );
+	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans * image->w );
 
 	SDL_RenderCopy( r, tex, NULL, NULL );
 
@@ -65,6 +66,8 @@ static void _displayImage( Image * image, const char * windowName, const int wid
 	SDL_DestroyTexture( tex );
 	SDL_DestroyRenderer( r );
 	SDL_DestroyWindow( win );
+
+
 }
 
 
