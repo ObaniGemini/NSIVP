@@ -7,7 +7,6 @@
 #include "stb_image.h"
 #include "arrayutils.h"
 
-
 typedef struct {
 	int w, h;
 	int chans;
@@ -19,7 +18,9 @@ typedef struct {
 	uint64_t data[256];
 } Histogram;
 
+void freeImage( Image * image );
 Image allocImage( int width, int height, int chans );
+
 Image storeImage( const char * path );
 Histogram storeHistogram( Image * image );
 

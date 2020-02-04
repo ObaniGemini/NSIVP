@@ -10,6 +10,16 @@ static int chooseSDLMode( int chans ) {
 	}
 }
 
+void freeImage( Image * image ) {
+	if( image->w || image->h ) {
+		image->w = 0;
+		image->h = 0;
+		image->chans = 0;
+		image->SDLmode = SDL_PIXELFORMAT_UNKNOWN;
+		stbi_image_free( image->pixels );
+	}
+}
+
 
 Image allocImage( const int width, const int height, const int chans ) {
 	Image image;
@@ -45,22 +55,28 @@ Histogram storeHistogram( Image * image ) {
 
 
 static void _displayImage( Image * image, const char * windowName, const int width, const int height ) {
-	
-	SDL_Window * win = SDL_CreateWindow( windowName, 0, 0, width, height, 0 );
-	SDL_Renderer * r = SDL_CreateRenderer( win, -1, SDL_RENDERER_ACCELERATED );
+	SDL_Window * win = SDL_CreateWindow( windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0 );
+	SDL_Renderer * r = SDL_CreateRenderer( win, -1, SDL_RENDERER_TARGETTEXTURE );
 	SDL_Event ev;
 
-	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, 0, image->w, image->h );
-	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->chans * image->w );
+	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, SDL_TEXTUREACCESS_STATIC, image->w, image->h );
+	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->w * image->chans );
 
 	SDL_RenderCopy( r, tex, NULL, NULL );
+	SDL_RenderPresent( r );
 
 	while( 1 ) {
 		SDL_PollEvent( &ev );
-		if( ev.type == SDL_QUIT )
+		if( ev.type == SDL_QUIT ) {
 			break;
+		}
 
-		SDL_RenderPresent( r );
+		else if( ev.type == SDL_WINDOWEVENT &&
+		  	   ( ev.window.event == SDL_WINDOWEVENT_SHOWN ||
+				 ev.window.event == SDL_WINDOWEVENT_EXPOSED ) ) {
+			SDL_RenderCopy( r, tex, NULL, NULL );
+			SDL_RenderPresent( r );
+		}
 	}
 
 	SDL_DestroyTexture( tex );
@@ -78,8 +94,8 @@ void displayImage( Image * image ) {
 
 
 void displayHistogram( Histogram * histogram ) {
-	const int w = 640;
-	const int h = 480;
+	const int w = 480;
+	const int h = 360;
 	const uint64_t maxValue = maxArrayU64( histogram->data, 256 );
 	const double factorValue = 256.0 / w;
 	const double factorCount = h / maxValue;
@@ -112,11 +128,17 @@ void exitNSIVP() {
 }
 
 
+
 int main() {
-	initNSIVP();
-	Image image = storeImage( "testimg.jpg" );
-	Histogram hist = storeHistogram( &image );
-	displayImage( &image );
-	displayHistogram( &hist );
-	exitNSIVP();
+	initNSIVP(); //init the lib
+
+	Image image = storeImage( "testimg.jpg" ); //store an image
+	Histogram hist = storeHistogram( &image ); //store the histogram of the image
+
+	displayImage( &image ); //display the image
+	freeImage( &image ); //free the image if we don't have enough memory
+
+	displayHistogram( &hist ); //display the histogram of the image
+
+	exitNSIVP(); //exit the lib
 }
