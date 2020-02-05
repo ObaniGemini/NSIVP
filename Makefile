@@ -1,22 +1,19 @@
 CC=gcc
-FLAGS=-lSDL2 -Wall -Wextra -g -lm
-
-
-HEADERS=stb_image.h
+CFLAGS=-Wall -Wextra -g
+LIBS=-lSDL2 -lm
 
 FILES=sivpbase.c arrayutils.c
 FILESOBJ=$(FILES:.c=.o)
-FILESHEAD=$(FILES:.c=.h)
 
 
 
-output:	$(FILESOBJ) $(FILESHEAD) $(HEADERS)
-	$(CC) $(FLAGS) $^ -o $@
+output: $(FILESOBJ)
+		$(CC) $(CFLAGS) $(FILESOBJ) -o $@ $(LIBS)
 	
 
 
 %.o:	%.c
-		$(CC) -c $< $(FLAGS)
+		$(CC) $(CFLAGS) -c $<
 
 
 

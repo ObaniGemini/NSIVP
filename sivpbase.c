@@ -10,8 +10,9 @@ static int chooseSDLMode( int chans ) {
 	}
 }
 
+
 void freeImage( Image * image ) {
-	if( image->w || image->h ) {
+	if( image->pixels != NULL ) {
 		image->w = 0;
 		image->h = 0;
 		image->chans = 0;
@@ -27,7 +28,8 @@ Image allocImage( const int width, const int height, const int chans ) {
 	image.h = height;
 	image.chans = chans;
 	image.SDLmode = chooseSDLMode( chans );
-	image.pixels = calloc( image.chans * image.w * image.h, sizeof( uint8_t ) );
+	image.pixels = calloc( width * height * chans, sizeof( uint8_t ) );
+	printf("Allocated space for an image of format %dx%d with %d channels\n\n", image.w, image.h, image.chans );
 	return image;
 }
 
@@ -36,6 +38,14 @@ Image storeImage( const char * path ) {
 	Image image;
 	image.pixels = stbi_load( path, &image.w, &image.h, &image.chans, 0 );
 	image.SDLmode = chooseSDLMode( image.chans );
+	if( image.w || image.h ) {
+		printf("Stored image %s with format %dx%d and %d channels\n\n", path, image.w, image.h, image.chans );
+	} else {
+		stbi_image_free( image.pixels );
+		image.pixels = NULL;
+		printf("There was an error storing image %s. Perhaps it doesn't exist ?\n\n", path );
+	}
+
 	return image;
 }
 
@@ -55,6 +65,11 @@ Histogram storeHistogram( Image * image ) {
 
 
 static void _displayImage( Image * image, const char * windowName, const int width, const int height ) {
+	if( image->pixels == NULL ) {
+		printf("Image was empty and couldn't be displayed.\n");
+		return;
+	}
+
 	SDL_Window * win = SDL_CreateWindow( windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0 );
 	SDL_Renderer * r = SDL_CreateRenderer( win, -1, SDL_RENDERER_TARGETTEXTURE );
 	SDL_Event ev;
@@ -82,8 +97,6 @@ static void _displayImage( Image * image, const char * windowName, const int wid
 	SDL_DestroyTexture( tex );
 	SDL_DestroyRenderer( r );
 	SDL_DestroyWindow( win );
-
-
 }
 
 
@@ -102,9 +115,8 @@ void displayHistogram( Histogram * histogram ) {
 
 	Image image = allocImage( w, h, 3 );
 
-
-	for( int i = 0; i < w; ++i ) {
-		size_t pos = i * 3 + ( h - ( histogram->data[ (size_t)(i * factorValue) ] * factorCount ) ) * ( w - 1 ) * 3;
+	for( int x = 0; x < w; ++x ) {
+		size_t pos = x * 3 + ( h - ( histogram->data[ (size_t)(x * factorValue) ] * factorCount ) ) * w * 3;
 		image.pixels[ pos ] = 255;
 		image.pixels[ pos + 1 ] = 255;
 		image.pixels[ pos + 2 ] = 255;
@@ -118,7 +130,7 @@ void displayHistogram( Histogram * histogram ) {
 
 
 void initNSIVP() {
-	SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS );
+	SDL_Init( SDL_INIT_VIDEO );
 }
 
 
@@ -129,10 +141,10 @@ void exitNSIVP() {
 
 
 
-int main() {
+int main( int argc, char *argv[] ) {
 	initNSIVP(); //init the lib
 
-	Image image = storeImage( "testimg.jpg" ); //store an image
+	Image image = storeImage( argv[1] ); //store an image
 	Histogram hist = storeHistogram( &image ); //store the histogram of the image
 
 	displayImage( &image ); //display the image
