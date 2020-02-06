@@ -3,9 +3,9 @@
 
 static int chooseSDLMode( int chans ) {
 	switch( chans ) {
-		case 1: return SDL_PIXELFORMAT_INDEX8;
-		case 3: return SDL_PIXELFORMAT_RGB888;
-		case 4: return SDL_PIXELFORMAT_RGBA8888;
+		case 1: return SDL_PIXELFORMAT_RGB332;
+		case 3: return SDL_PIXELFORMAT_RGB24;
+		case 4: return SDL_PIXELFORMAT_RGBA32;
 		default: printf("Error loading image SDL mode\n"); return SDL_PIXELFORMAT_UNKNOWN;
 	}
 }
@@ -111,18 +111,18 @@ void displayHistogram( Histogram * histogram ) {
 	const int h = 360;
 	const uint64_t maxValue = maxArrayU64( histogram->data, 256 );
 	const double factorValue = 256.0 / w;
-	const double factorCount = h / maxValue;
+	const double factorCount = h / (double)maxValue;
+	printf("%f\n", factorCount);
 
-	Image image = allocImage( w, h, 3 );
+	Image image = allocImage( w, h, 1 );
 
 	for( int x = 0; x < w; ++x ) {
-		size_t pos = x * 3 + ( h - ( histogram->data[ (size_t)(x * factorValue) ] * factorCount ) ) * w * 3;
+		size_t pos = x * 3 + ( h - ( histogram->data[ (size_t)(x * factorValue) ] * factorCount ) ) * w;
 		image.pixels[ pos ] = 255;
-		image.pixels[ pos + 1 ] = 255;
-		image.pixels[ pos + 2 ] = 255;
 	}
 
 	_displayImage( &image, "NSVIP Histogram Display", w, h );
+	freeImage( &image );
 }
 
 
