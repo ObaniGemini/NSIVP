@@ -11,6 +11,42 @@ static int chooseSDLMode( int chans ) {
 }
 
 
+static void _drawLine( Image * image, int X1, int Y1, int X2, int Y2 ) {
+	int u = X2 - X1;
+	int v = Y2 - Y1;
+
+	printf("%d %d\n", u, v );
+
+	if( u > v ) {
+		if( v == 0 ) {
+			for( int x = X1; x <= X2; x++ ) {
+				image->pixels[ x + Y1 * image->w ] = 255;
+			}
+		} else {
+			double grad = (double)u / (double)v;
+			printf("%f\n", grad);
+			double y = Y1;
+			for( int x = X1; x <= X2 && y <= Y2; x++, y += grad ) {
+				image->pixels[ x + (int)y * image->w ] = 255;
+			}
+		}
+	} else {
+		if( u == 0 ) {
+			for( int y = Y1; y <= Y2; y++ ) {
+				image->pixels[ X1 + y * image->w ] = 255;
+			}
+		} else {
+			double grad = (double)v / (double)u;
+			printf("%f\n", grad);
+			double x = X1;
+			for( int y = Y1; y <= Y2 && x <= X2; y++, x += grad ) {
+				image->pixels[ (int)x + y * image->w ] = 255;
+			}
+		}
+	}
+}
+
+
 void freeImage( Image * image ) {
 	if( image->pixels != NULL ) {
 		image->w = 0;
@@ -110,15 +146,17 @@ void displayHistogram( Histogram * histogram ) {
 	const int w = 480;
 	const int h = 360;
 	const uint64_t maxValue = maxArrayU64( histogram->data, 256 );
-	const double factorValue = 256.0 / w;
+	const double factorValue = w / 256.0;
 	const double factorCount = h / (double)maxValue;
 	printf("%f\n", factorCount);
 
 	Image image = allocImage( w, h, 1 );
 
-	for( int x = 0; x < w; ++x ) {
-		size_t pos = x * 3 + ( h - ( histogram->data[ (size_t)(x * factorValue) ] * factorCount ) ) * w;
-		image.pixels[ pos ] = 255;
+	for( int x = 0; x < 255; x++ ) {
+		int Y1 = ( h - (int)( histogram->data[ x ] * factorCount ) );
+		int Y2 = ( h - (int)( histogram->data[ x + 1 ] * factorCount ) );
+		printf("[ %d %d ], [ %d %d ]\n", (int)(x * factorValue), Y1, (int)(( x + 1 ) * factorValue), Y2 );
+		_drawLine( &image, (int)(x * factorValue), Y1, (int)(( x + 1 ) * factorValue), Y2 );
 	}
 
 	_displayImage( &image, "NSVIP Histogram Display", w, h );
