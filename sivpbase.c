@@ -178,6 +178,46 @@ void exitNSIVP() {
 }
 
 
+/*
+	it's the same that inlincomb you just have to add the count which is the number of argument
+	only for double
+*/
+double imlincomb(int count,...)
+{	double sum=0;
+	va_list ap;
+	va_start(ap,count);
+	for (int i = 0; i < count; i+=2)
+	{
+		sum+=va_arg(ap,double)*va_arg(ap,double);
+	}
+	va_end(ap);
+	return sum;
+}
+/*
+	it's the same that inlincomb you just have to add the count which is the number of argument
+	only for tab of double
+	copie[0] is the size of each tab
+	and the tab of return 
+*/
+void inlincombtab(double* copie,size_t count,...)
+{	double sum;
+	va_list ap;
+	int size=(int)copie[0];
+	for (int i = 0; i < size; ++i)
+	{	sum=0;
+		va_start(ap,count);
+		for (int j = 0; j <= count/2; ++j)
+		{
+			sum+=va_arg(ap,double)*va_arg(ap,double*)[j];
+
+		}
+		copie[i]=sum;
+		va_end(ap);
+	}
+	
+}
+
+
 
 int main( int argc, char *argv[] ) {
 	initNSIVP(); //init the lib
