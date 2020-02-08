@@ -206,10 +206,9 @@ void inlincombtab(double* copie,size_t count,...)
 	for (int i = 0; i < size; ++i)
 	{	sum=0;
 		va_start(ap,count);
-		for (int j = 0; j <= count/2; ++j)
+		for (size_t j = 0; j <= count/2; ++j)
 		{
 			sum+=va_arg(ap,double)*va_arg(ap,double*)[j];
-
 		}
 		copie[i]=sum;
 		va_end(ap);
@@ -217,17 +216,52 @@ void inlincombtab(double* copie,size_t count,...)
 	
 }
 
-
-
+Image immultiply(Image X,Image Y)
+{	Image image	;
+	int taille;
+	if(( X.w *X.h )> ( Y.w * Y.h ))
+	{	taille= Y.w * Y.h ;
+		image = allocImage( X.w, X.h, 1 );
+		for (int i = 0; i < taille; ++i)
+		{
+			image.pixels[i] = (X.pixels[i] * Y.pixels[i]) ;
+		
+		}
+		for (int i = taille+1; i < X.w*X.h; ++i)
+		{
+			image.pixels[i] = X.pixels[i];
+			
+		}
+	}
+	else
+	{	taille = X.w * X.h ;
+		image = allocImage( Y.w, Y.h, 1 );
+		for (int i = 0; i < taille; ++i)
+		{
+			image.pixels[i] = (X.pixels[i] * Y.pixels[i]) ;
+		
+		}
+		for (int i = taille+1; i < Y.w * Y.h; ++i)
+		{
+			image.pixels[i] = Y.pixels[i];
+					}
+	}
+	return image;
+}
 int main( int argc, char *argv[] ) {
+	if(argc<2)
+	{
+		fprintf(stderr, "%s %d\n","<image> not found",__LINE__ );
+		exit(0);
+	}	
 	initNSIVP(); //init the lib
 
 	Image image = storeImage( argv[1] ); //store an image
 	Histogram hist = storeHistogram( &image ); //store the histogram of the image
-
+	image=immultiply(image,image);
+	
 	displayImage( &image ); //display the image
 	freeImage( &image ); //free the image if we don't have enough memory
-
 	displayHistogram( &hist ); //display the histogram of the image
 
 	exitNSIVP(); //exit the lib
