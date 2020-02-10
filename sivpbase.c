@@ -11,38 +11,9 @@ static int chooseSDLMode( int chans ) {
 }
 
 
-static void _drawLine( Image * image, int X1, int Y1, int X2, int Y2 ) {
-	int u = X2 - X1;
-	int v = Y2 - Y1;
-
-	printf("%d %d\n", u, v );
-
-	if( u > v ) {
-		if( v == 0 ) {
-			for( int x = X1; x <= X2; x++ ) {
-				image->pixels[ x + Y1 * image->w ] = 255;
-			}
-		} else {
-			double grad = (double)u / (double)v;
-			printf("%f\n", grad);
-			double y = Y1;
-			for( int x = X1; x <= X2 && y <= Y2; x++, y += grad ) {
-				image->pixels[ x + (int)y * image->w ] = 255;
-			}
-		}
-	} else {
-		if( u == 0 ) {
-			for( int y = Y1; y <= Y2; y++ ) {
-				image->pixels[ X1 + y * image->w ] = 255;
-			}
-		} else {
-			double grad = (double)v / (double)u;
-			printf("%f\n", grad);
-			double x = X1;
-			for( int y = Y1; y <= Y2 && x <= X2; y++, x += grad ) {
-				image->pixels[ (int)x + y * image->w ] = 255;
-			}
-		}
+static void _drawVerticalLine( Image * image, int X, int Y ) {
+	for( int y = Y; y < image->h; y++ ) {
+		image->pixels[ X + y * image->w ] = 255;
 	}
 }
 
@@ -152,11 +123,8 @@ void displayHistogram( Histogram * histogram ) {
 
 	Image image = allocImage( w, h, 1 );
 
-	for( int x = 0; x < 255; x++ ) {
-		int Y1 = ( h - (int)( histogram->data[ x ] * factorCount ) );
-		int Y2 = ( h - (int)( histogram->data[ x + 1 ] * factorCount ) );
-		printf("[ %d %d ], [ %d %d ]\n", (int)(x * factorValue), Y1, (int)(( x + 1 ) * factorValue), Y2 );
-		_drawLine( &image, (int)(x * factorValue), Y1, (int)(( x + 1 ) * factorValue), Y2 );
+	for( int x = 0; x < 256; x++ ) {
+		_drawVerticalLine( &image, (int)(x * factorValue), ( h - (int)( histogram->data[ x ] * factorCount ) ) );
 	}
 
 	_displayImage( &image, "NSVIP Histogram Display", w, h );
