@@ -11,9 +11,9 @@ static int chooseSDLMode( int chans ) {
 }
 
 
-static void _drawVerticalLine( Image * image, int X, int Y ) {
-	for( int y = Y; y < image->h; y++ ) {
-		image->pixels[ X + y * image->w ] = 255;
+static void _drawVerticalLine( Image image, int X, int Y ) {
+	for( int y = Y; y < image.h; y++ ) {
+		image.pixels[ X + y * image.w ] = 255;
 	}
 }
 
@@ -57,13 +57,13 @@ Image storeImage( const char * path ) {
 }
 
 
-Histogram storeHistogram( Image * image ) {
+Histogram storeHistogram( Image image ) {
 	Histogram histogram;
 	bzero( histogram.data, sizeof( uint64_t ) * 256 );
 
-	uint64_t imageSize = image->w * image->h;
+	uint64_t imageSize = image.w * image.h;
 	for( uint64_t i = 0; i < imageSize; i++ ) {
-		histogram.data[ image->pixels[ i ] ]++;
+		histogram.data[ image.pixels[ i ] ]++;
 	} return histogram;
 }
 
@@ -71,8 +71,8 @@ Histogram storeHistogram( Image * image ) {
 
 
 
-static void _displayImage( Image * image, const char * windowName, const int width, const int height ) {
-	if( image->pixels == NULL ) {
+static void _displayImage( Image image, const char * windowName, const int width, const int height ) {
+	if( image.pixels == NULL ) {
 		printf("Image was empty and couldn't be displayed.\n");
 		return;
 	}
@@ -81,8 +81,8 @@ static void _displayImage( Image * image, const char * windowName, const int wid
 	SDL_Renderer * r = SDL_CreateRenderer( win, -1, SDL_RENDERER_TARGETTEXTURE );
 	SDL_Event ev;
 
-	SDL_Texture * tex = SDL_CreateTexture( r, image->SDLmode, SDL_TEXTUREACCESS_STATIC, image->w, image->h );
-	SDL_UpdateTexture( tex, NULL, image->pixels, sizeof( uint8_t ) * image->w * image->chans );
+	SDL_Texture * tex = SDL_CreateTexture( r, image.SDLmode, SDL_TEXTUREACCESS_STATIC, image.w, image.h );
+	SDL_UpdateTexture( tex, NULL, image.pixels, sizeof( uint8_t ) * image.w * image.chans );
 
 	SDL_RenderCopy( r, tex, NULL, NULL );
 	SDL_RenderPresent( r );
@@ -107,8 +107,8 @@ static void _displayImage( Image * image, const char * windowName, const int wid
 }
 
 
-void displayImage( Image * image ) {
-	_displayImage( image, "NSVIP Image Display", image->w, image->h );
+void displayImage( Image image ) {
+	_displayImage( image, "NSVIP Image Display", image.w, image.h );
 }
 
 
@@ -119,31 +119,30 @@ void displayHistogram( Histogram * histogram ) {
 	const uint64_t maxValue = maxArrayU64( histogram->data, 256 );
 	const double factorValue = w / 256.0;
 	const double factorCount = h / (double)maxValue;
-	printf("%f\n", factorCount);
 
 	Image image = allocImage( w, h, 1 );
 
 	for( int x = 0; x < 256; x++ ) {
-		_drawVerticalLine( &image, (int)(x * factorValue), ( h - (int)( histogram->data[ x ] * factorCount ) ) );
+		_drawVerticalLine( image, (int)(x * factorValue), ( h - (int)( histogram->data[ x ] * factorCount ) ) );
 	}
 
-	_displayImage( &image, "NSVIP Histogram Display", w, h );
+	_displayImage( image, "NSVIP Histogram Display", w, h );
 	freeImage( &image );
 }
 
 
 
 
-Image rgb2gray( Image * image ) {
-	Image output = allocImage( image->w, image->h, 1 );
-	size_t numPixels = image->w * image->h;
-	int chans = image->chans;
+Image rgb2gray( Image image ) {
+	Image output = allocImage( image.w, image.h, 1 );
+	size_t numPixels = image.w * image.h;
+	int chans = image.chans;
 
 	for( size_t i = 0; i < numPixels; i++ ) {
-		output.pixels[ i ] = (	(size_t)image->pixels[ i*chans ] *
-								(size_t)image->pixels[ i*chans + 1 ] *
-								image->pixels[ i*chans + 2 ] ) /
-							 ( 255 * 255 * 255 );
+		output.pixels[ i ] = (	(size_t)image.pixels[ i*chans ] *
+								(size_t)image.pixels[ i*chans + 1 ] *
+								(size_t)image.pixels[ i*chans + 2 ] ) /
+							    (size_t)( 255 * 255 );
 	} return output;
 }
 
@@ -190,7 +189,7 @@ void inlincombtab( double* copie, size_t count, ... )
 
 
 
-Image immultiply( Image X, Image Y )
+Image imageMultiply( Image X, Image Y )
 {	Image image;
 	int taille;
 
@@ -236,19 +235,27 @@ void exitNSIVP() {
 
 int main( int argc, char *argv[] ) {
 	if( argc < 2 ) {
-		fprintf(stderr, "%s %d\n","<image> not found",__LINE__ );
+		fprintf( stderr, "%s %d\n", "<image> not found", __LINE__ );
 		exit(0);
 	}
 
 	initNSIVP(); //init the lib
 
 	Image image = storeImage( argv[1] ); //store an image
-	Histogram hist = storeHistogram( &image ); //store the histogram of the image
-	image = immultiply( image, image );
+	Image image2 = imageMultiply( image, image ); //store the multiplication of image by itself
+	Image gray = rgb2gray( image ); //store the gray-colored version of the image
 	
-	displayImage( &image ); //display the image
-	freeImage( &image ); //free the image if we don't have enough memory
-	displayHistogram( &hist ); //display the histogram of the image
+	displayImage( image ); //display the image
+	displayImage( image2 ); //display the multiplied image
+	displayImage( gray ); //display the gray image
+
+	Histogram hist = storeHistogram( image ); //store the histogram of the image gray
+
+	freeImage( &image ); //free the image 1
+	freeImage( &image2 ); //free the image 2
+	freeImage( &gray ); //free the image gray
+
+	displayHistogram( &hist ); //display the histogram of the image gray
 
 	exitNSIVP(); //exit the lib
 }

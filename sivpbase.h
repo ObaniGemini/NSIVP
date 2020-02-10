@@ -22,13 +22,13 @@ void freeImage( Image * image );
 Image allocImage( int width, int height, int chans );
 
 Image storeImage( const char * path );
-Histogram storeHistogram( Image * image );
+Histogram storeHistogram( Image image );
 
-void displayImage( Image * image );
+void displayImage( Image image );
 void displayHistogram( Histogram * histogram );
 
-void rgb2gray( Image * image );
-
+Image rgb2gray( Image image );
+Image imageMultiply( Image X, Image Y );
 
 void initNSIVP();
 void exitNSIVP();
