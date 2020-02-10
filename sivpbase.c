@@ -134,6 +134,92 @@ void displayHistogram( Histogram * histogram ) {
 
 
 
+Image rgb2gray( Image * image ) {
+	Image output = allocImage( image->w, image->h, 1 );
+	size_t numPixels = image->w * image->h;
+	int chans = image->chans;
+
+	for( size_t i = 0; i < numPixels; i++ ) {
+		output.pixels[ i ] = (	(size_t)image->pixels[ i*chans ] *
+								(size_t)image->pixels[ i*chans + 1 ] *
+								image->pixels[ i*chans + 2 ] ) /
+							 ( 255 * 255 * 255 );
+	} return output;
+}
+
+
+
+/*
+	it's the same that inlincomb you just have to add the count which is the number of argument
+	only for double
+*/
+double imlincomb( int count, ... )
+{	double sum = 0;
+	va_list ap;
+	va_start( ap, count );
+
+	for( int i = 0; i < count; i += 2 ) {
+		sum += va_arg( ap, double ) * va_arg( ap, double );
+	}
+	va_end( ap );
+	return sum;
+}
+
+
+/*
+	it's the same that inlincomb you just have to add the count which is the number of argument
+	only for tab of double
+	copie[0] is the size of each tab
+	and the tab of return 
+*/
+void inlincombtab( double* copie, size_t count, ... )
+{	double sum;
+	va_list ap;
+	int size = (int)copie[0];
+	for( int i = 0; i < size; ++i ) {
+		sum = 0;
+		va_start( ap, count );
+		for( size_t j = 0; j <= count/2; ++j ) {
+			sum += va_arg( ap, double ) * va_arg( ap, double* )[j];
+		}
+		copie[i] = sum;
+		va_end( ap );
+	}
+}
+
+
+
+
+Image immultiply( Image X, Image Y )
+{	Image image;
+	int taille;
+
+	if( ( X.w *X.h ) > ( Y.w * Y.h ) ) {
+		taille = Y.w * Y.h ;
+		image = allocImage( X.w, X.h, 1 );
+		for( int i = 0; i < taille; ++i ) {
+			image.pixels[i] = ( X.pixels[i] * Y.pixels[i] ) ;
+		}
+
+		for( int i = taille + 1; i < X.w * X.h; ++i ) {
+			image.pixels[i] = X.pixels[i];
+		}
+	}
+	else {
+		taille = X.w * X.h ;
+		image = allocImage( Y.w, Y.h, 1 );
+		for( int i = 0; i < taille; ++i ) {
+			image.pixels[i] = ( X.pixels[i] * Y.pixels[i] ) ;
+		
+		}
+		for( int i = taille + 1; i < Y.w * Y.h; ++i ) {
+			image.pixels[i] = Y.pixels[i];
+		}
+	} return image;
+}
+
+
+
 
 void initNSIVP() {
 	SDL_Init( SDL_INIT_VIDEO );
@@ -146,87 +232,19 @@ void exitNSIVP() {
 }
 
 
-/*
-	it's the same that inlincomb you just have to add the count which is the number of argument
-	only for double
-*/
-double imlincomb(int count,...)
-{	double sum=0;
-	va_list ap;
-	va_start(ap,count);
-	for (int i = 0; i < count; i+=2)
-	{
-		sum+=va_arg(ap,double)*va_arg(ap,double);
-	}
-	va_end(ap);
-	return sum;
-}
-/*
-	it's the same that inlincomb you just have to add the count which is the number of argument
-	only for tab of double
-	copie[0] is the size of each tab
-	and the tab of return 
-*/
-void inlincombtab(double* copie,size_t count,...)
-{	double sum;
-	va_list ap;
-	int size=(int)copie[0];
-	for (int i = 0; i < size; ++i)
-	{	sum=0;
-		va_start(ap,count);
-		for (size_t j = 0; j <= count/2; ++j)
-		{
-			sum+=va_arg(ap,double)*va_arg(ap,double*)[j];
-		}
-		copie[i]=sum;
-		va_end(ap);
-	}
-	
-}
 
-Image immultiply(Image X,Image Y)
-{	Image image	;
-	int taille;
-	if(( X.w *X.h )> ( Y.w * Y.h ))
-	{	taille= Y.w * Y.h ;
-		image = allocImage( X.w, X.h, 1 );
-		for (int i = 0; i < taille; ++i)
-		{
-			image.pixels[i] = (X.pixels[i] * Y.pixels[i]) ;
-		
-		}
-		for (int i = taille+1; i < X.w*X.h; ++i)
-		{
-			image.pixels[i] = X.pixels[i];
-			
-		}
-	}
-	else
-	{	taille = X.w * X.h ;
-		image = allocImage( Y.w, Y.h, 1 );
-		for (int i = 0; i < taille; ++i)
-		{
-			image.pixels[i] = (X.pixels[i] * Y.pixels[i]) ;
-		
-		}
-		for (int i = taille+1; i < Y.w * Y.h; ++i)
-		{
-			image.pixels[i] = Y.pixels[i];
-					}
-	}
-	return image;
-}
+
 int main( int argc, char *argv[] ) {
-	if(argc<2)
-	{
+	if( argc < 2 ) {
 		fprintf(stderr, "%s %d\n","<image> not found",__LINE__ );
 		exit(0);
-	}	
+	}
+
 	initNSIVP(); //init the lib
 
 	Image image = storeImage( argv[1] ); //store an image
 	Histogram hist = storeHistogram( &image ); //store the histogram of the image
-	image=immultiply(image,image);
+	image = immultiply( image, image );
 	
 	displayImage( &image ); //display the image
 	freeImage( &image ); //free the image if we don't have enough memory
