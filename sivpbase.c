@@ -87,6 +87,7 @@ static void _displayImage( Image image, const char * windowName, const int width
 	SDL_RenderCopy( r, tex, NULL, NULL );
 	SDL_RenderPresent( r );
 
+	int imageSaved = 0;
 	while( 1 ) {
 		SDL_PollEvent( &ev );
 		if( ev.type == SDL_QUIT ) {
@@ -98,6 +99,21 @@ static void _displayImage( Image image, const char * windowName, const int width
 				 ev.window.event == SDL_WINDOWEVENT_EXPOSED ) ) {
 			SDL_RenderCopy( r, tex, NULL, NULL );
 			SDL_RenderPresent( r );
+		}
+
+		else if( ev.type == SDL_KEYDOWN && ev.key.state == SDL_PRESSED && ev.key.keysym.sym == SDLK_F12 && !imageSaved ) {
+			time_t currTime = time( NULL );
+			struct tm * t = gmtime( &currTime ); 
+			char * timeStr = malloc( sizeof( char ) * 24 );
+			sprintf( timeStr, "%d_%d_%d_%d_%d_%d.png", t->tm_year + 1900, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec );
+
+
+			if( stbi_write_png( timeStr, image.w, image.h, 3, image.pixels, image.w * 3 ) ) {
+				printf("Saved image %s\n", timeStr);
+				imageSaved = 1;
+			} else {
+				printf("Failed saving image %s\n", timeStr);
+			}
 		}
 	}
 
