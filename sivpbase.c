@@ -70,6 +70,26 @@ Histogram storeHistogram( Image image ) {
 
 
 
+int saveImage( const char * path, Image image ) {
+	const char * format = path + strlen( path ) - 3;
+
+	if( strcmp( format, "png" ) == 0 ) {
+		return stbi_write_png( path, image.w, image.h, 3, image.pixels, image.w * 3 );
+	} else if( strcmp( format, "bmp" ) == 0 ) {
+		return stbi_write_bmp( path, image.w, image.h, 3, image.pixels );
+	} else if( strcmp( format, "tga" ) == 0 ) {
+		return stbi_write_tga( path, image.w, image.h, 3, image.pixels );
+	} else if( strcmp( format, "jpg" ) == 0 ) {
+		return stbi_write_jpg( path, image.w, image.h, 3, image.pixels, 100 );
+	} else {
+		printf("Unrecognized format %s\n", format);
+	}
+	
+	return 0;
+}
+
+
+
 
 static void _displayImage( Image image, const char * windowName, const int width, const int height ) {
 	if( image.pixels == NULL ) {
@@ -104,15 +124,15 @@ static void _displayImage( Image image, const char * windowName, const int width
 		else if( ev.type == SDL_KEYDOWN && ev.key.state == SDL_PRESSED && ev.key.keysym.sym == SDLK_F12 && !imageSaved ) {
 			time_t currTime = time( NULL );
 			struct tm * t = gmtime( &currTime ); 
-			char * timeStr = malloc( sizeof( char ) * 24 );
-			sprintf( timeStr, "%d_%d_%d_%d_%d_%d.png", t->tm_year + 1900, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec );
+			char * fileName = malloc( sizeof( char ) * 24 );
+			sprintf( fileName, "%d_%d_%d_%d-%d-%d.png", t->tm_year + 1900, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec );
 
 
-			if( stbi_write_png( timeStr, image.w, image.h, 3, image.pixels, image.w * 3 ) ) {
-				printf("Saved image %s\n", timeStr);
+			if( saveImage( fileName, image ) ) {
+				printf( "Saved image %s\n", fileName );
 				imageSaved = 1;
 			} else {
-				printf("Failed saving image %s\n", timeStr);
+				printf( "Failed saving image %s\n", fileName );
 			}
 		}
 	}
@@ -145,7 +165,6 @@ void displayHistogram( Histogram * histogram ) {
 	_displayImage( image, "NSVIP Histogram Display", w, h );
 	freeImage( &image );
 }
-
 
 
 
