@@ -9,6 +9,7 @@
 #include "stb/stb_image_write.h"
 
 #include "arrayutils.h"
+#include "vectors.h"
 
 typedef struct {
 	int w, h;
@@ -26,6 +27,9 @@ Image allocImage( int width, int height, int chans );
 
 Image storeImage( const char * path );
 Histogram storeHistogram( Image image );
+
+void clearImage( Image * image );
+void clearHistogram( Histogram * histogram );
 
 int saveImage( const char * path, Image image );
 

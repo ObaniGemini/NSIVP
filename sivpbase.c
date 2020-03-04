@@ -68,6 +68,14 @@ Histogram storeHistogram( Image image ) {
 }
 
 
+void clearImage( Image * image ) {
+	memset( image->pixels, 0, image->w * image->h * image->chans );
+}
+
+
+void clearHistogram( Histogram * histogram ) {
+	memset( histogram->data, 0, 256 * sizeof( uint64_t ) );
+}
 
 
 int saveImage( const char * path, Image image ) {
@@ -268,7 +276,7 @@ void exitNSIVP() {
 
 
 
-int main( int argc, char *argv[] ) {
+/*int main( int argc, char *argv[] ) {
 	if( argc < 2 ) {
 		fprintf( stderr, "%s %d\n", "<image> not found", __LINE__ );
 		exit(0);
@@ -293,4 +301,4 @@ int main( int argc, char *argv[] ) {
 	displayHistogram( &hist ); //display the histogram of the image gray
 
 	exitNSIVP(); //exit the lib
-}
+}*/
