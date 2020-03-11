@@ -2,13 +2,14 @@ CC=gcc
 CFLAGS=-Wall -Wextra -g
 LIBS=-lSDL2 -lm
 
-FILES=sivpbase.c arrayutils.c vectors.c
-FILESOBJ=$(FILES:.c=.o)
+STB=stb/stb_image.c stb/stb_image_write.c
+NSIVP=sivpbase.c arrayutils.c vectors.c $(STB)
+NSIVPOBJ=$(NSIVP:.c=.o)
+NSIVPOBJPATH=$(subst stb/, $(empty), $(NSIVPOBJ))
 
 
-
-output: $(FILESOBJ)
-		$(CC) $(CFLAGS) $(FILESOBJ) -o $@ $(LIBS)
+output: $(NSIVPOBJ)
+		$(CC) $(CFLAGS) $(NSIVPOBJPATH) -o $@ $(LIBS)
 	
 
 
