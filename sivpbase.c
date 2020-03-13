@@ -236,7 +236,7 @@ Image imageMultiply( Image X, Image Y )
 {	Image image;
 	int taille;
 
-	if( ( X.w *X.h ) > ( Y.w * Y.h ) ) {
+	if( ( X.w * X.h ) > ( Y.w * Y.h ) ) {
 		taille = Y.w * Y.h ;
 		image = allocImage( X.w, X.h, 1 );
 		for( int i = 0; i < taille; ++i ) {
