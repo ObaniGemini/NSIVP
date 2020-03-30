@@ -2,24 +2,6 @@
 
 
 
-Vec2Di makeVec2Di( ssize_t x, ssize_t y ) {
-	Vec2Di vec = { x, y };
-	return vec; }
-Vec2Df makeVec2Df( double x, double y ) {
-	Vec2Df vec = { x, y };
-	return vec; }
-
-Vec3Di makeVec3Di( ssize_t x, ssize_t y, ssize_t z ) {
-	Vec3Di vec = { x, y, z };
-	return vec; }
-Vec3Df makeVec3Df( double x, double y, double z ) {
-	Vec3Df vec = { x, y, z };
-	return vec; }
-
-
-
-
-
 double distanceVec2Di( Vec2Di A, Vec2Di B ) {
 	ssize_t tmp1 = A.x - B.x;
 	ssize_t tmp2 = A.y - B.y;

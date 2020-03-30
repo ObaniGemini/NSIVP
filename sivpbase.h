@@ -26,13 +26,13 @@ Image allocImage( int width, int height, int chans );
 Image storeImage( const char * path );
 Histogram storeHistogram( Image image );
 
-void clearImage( Image * image );
-void clearHistogram( Histogram * histogram );
+void clearImage( Image image );
+void clearHistogram( Histogram histogram );
 
 int saveImage( const char * path, Image image );
 
 void displayImage( Image image );
-void displayHistogram( Histogram * histogram );
+void displayHistogram( Histogram histogram );
 
 Image rgb2gray( Image image );
 Image imageMultiply( Image X, Image Y );

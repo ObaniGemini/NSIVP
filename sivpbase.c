@@ -68,13 +68,13 @@ Histogram storeHistogram( Image image ) {
 }
 
 
-void clearImage( Image * image ) {
-	memset( image->pixels, 0, image->w * image->h * image->chans );
+void clearImage( Image image ) {
+	memset( image.pixels, 0, image.w * image.h * image.chans * sizeof( uint8_t ) );
 }
 
 
-void clearHistogram( Histogram * histogram ) {
-	memset( histogram->data, 0, 256 * sizeof( uint64_t ) );
+void clearHistogram( Histogram histogram ) {
+	memset( histogram.data, 0, 256 * sizeof( uint64_t ) );
 }
 
 
@@ -157,17 +157,17 @@ void displayImage( Image image ) {
 
 
 
-void displayHistogram( Histogram * histogram ) {
+void displayHistogram( Histogram histogram ) {
 	const int w = 480;
 	const int h = 360;
-	const uint64_t maxValue = maxArrayU64( histogram->data, 256 );
+	const uint64_t maxValue = maxArrayU64( histogram.data, 256 );
 	const double factorValue = w / 256.0;
 	const double factorCount = h / (double)maxValue;
 
 	Image image = allocImage( w, h, 1 );
 
 	for( int x = 0; x < 256; x++ ) {
-		_drawVerticalLine( image, (int)(x * factorValue), ( h - (int)( histogram->data[ x ] * factorCount ) ) );
+		_drawVerticalLine( image, (int)(x * factorValue), ( h - (int)( histogram.data[ x ] * factorCount ) ) );
 	}
 
 	_displayImage( image, "NSVIP Histogram Display", w, h );
@@ -298,7 +298,7 @@ void exitNSIVP() {
 	freeImage( &image2 ); //free the image 2
 	freeImage( &gray ); //free the image gray
 
-	displayHistogram( &hist ); //display the histogram of the image gray
+	displayHistogram( hist ); //display the histogram of the image gray
 
 	exitNSIVP(); //exit the lib
 }*/
